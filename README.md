@@ -1,3 +1,1 @@
-# portfolio-resume
-portfolio maker
-## hi, iam tarun kumar
+## Show Case Me project
