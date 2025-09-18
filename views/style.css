@@ -1,0 +1,49 @@
+body {
+    background-color: black;
+    margin: 0;
+    font-family: sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+.hero-content h1 {
+    color: hsl(110, 75%, 52%);
+    font-size: 3rem;
+    animation: fadeIn 1s ease-in-out;
+}
+
+.hero-content p {
+    color: #00ccdc;
+    font-size: 1.5rem;
+    animation: slideInLeft 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+
+    .hero-content p {
+        font-size: 1rem;
+    }
+}
