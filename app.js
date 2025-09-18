@@ -1,6 +1,8 @@
 const express =require('express');
 const app = express();
 const mongoose = require('mongoose')
+const dotenv = require('dotenv');
+dotenv.config();
 
 const path = require('path');
 const methodoverride= require('method-override');
@@ -21,7 +23,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodoverride('_method'));
 app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public"))); 
-const mongo_url="mongodb://127.0.0.1:27017/portfolio-resume";
+
 main().then(()=>{
     console.log("mongodb connected");
 }).catch((err)=>{ 
@@ -29,11 +31,11 @@ main().then(()=>{
 });
 
 async function main(){
-    await mongoose.connect(mongo_url);
+    await mongoose.connect(process.env.mongo_url);
 };
 
 const sessionOptions={
-    secret:"hi123456789Tarun",
+    secret:process.env.session_secret,
     resave:false,
     saveUninitialized:true,
     cookie:{
@@ -77,8 +79,8 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error.ejs',{message});
 });
 
-app.listen(3000,()=>{
-    console.log("server listening at port 3000");
+app.listen(process.env.port,()=>{
+    console.log(`server listening at port ${process.env.port}`);
 });
 
 
