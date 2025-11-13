@@ -1,87 +1,92 @@
-const express =require('express');
+const express = require('express');
 const app = express();
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-dotenv.config();
-
 const path = require('path');
-const methodoverride= require('method-override');
-const ejsMate= require('ejs-mate');
+const methodOverride = require('method-override');
+const ejsMate = require('ejs-mate');
 const session = require('express-session');
 const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
-const User = require('./models/user.js');
 
-// const listingRouter = require('./routes/listing.js');
-// const reviewRouter = require('./routes/review.js');
-const userRouter = require('./routes/user.js');
+// Routes & Models
+const userRoutes = require('./routes/user');
+const portfolioRoutes = require('./routes/portfolio');//*to be changed
+const User = require('./models/user');
 
-app.set("view engine","ejs");
-app.set("views", path.join(__dirname,"views"));
-app.use(express.urlencoded({extended:true}));
-app.use(methodoverride('_method'));
-app.engine("ejs",ejsMate);
-app.use(express.static(path.join(__dirname,"/public"))); 
+// Load environment variables
+dotenv.config();
 
-main().then(()=>{
-    console.log("mongodb connected");
-}).catch((err)=>{ 
-    console.log(err);
-});
+// EJS setup
+app.engine('ejs', ejsMate);
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); 
 
-async function main(){
-    await mongoose.connect(process.env.mongo_url);
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // allow JSON body
+app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Session configuration
+const sessionOptions = {
+  secret: process.env.SESSION_SECRET || 'thisshouldbeabettersecret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    // secure: true, // enable when HTTPS
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }
 };
-
-const sessionOptions={
-    secret:process.env.session_secret,
-    resave:false,
-    saveUninitialized:true,
-    cookie:{
-        expires:Date.now()+7*24*60*60*1000,
-        maxAge:7*24*60*60*1000,
-        HttpOnly:true,
-    }
-}
 
 app.use(session(sessionOptions));
 app.use(flash());
+
+// Passport setup
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-app.use((req,res,next)=>{
-    res.locals.success=req.flash('success');
-    res.locals.error=req.flash('error');
-    res.locals.currUser=req.user;
-    next();
-})
-
-app.get('/',async (req,res)=>{
-    // const allListings = await Listing.find();
-    // res.render('listings/index.ejs',{allListings});
-    res.send("Home Page");
-})
-
-// app.use('/listings',listingRouter);
-// app.use('/listings/:id/reviews',reviewRouter);
-app.use('/',userRouter);
-
+// Global variables for all views
 app.use((req, res, next) => {
-    res.status(404).render('error.ejs',{message:"Page Not Found"});
+  res.locals.currUser = req.user || null;
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  next();
 });
-//middleware
+
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => {
+    console.log('✅ MongoDB connected');
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+  });
+
+// Routes
+app.get('/', (req, res) => {
+  res.render('home');
+});
+
+
+app.use('/users', userRoutes);
+app.use('/users/:id/portfolio', portfolioRoutes);
+
+// Error handler
 app.use((err, req, res, next) => {
-    const { statusCode = 500, message = "Something went wrong" } = err;
-    res.status(statusCode).render('error.ejs',{message});
+  console.error(err.stack);
+  req.flash('error', 'Something went wrong!');
+  res.redirect('/');
 });
 
-app.listen(process.env.port,()=>{
-    console.log(`server listening at port ${process.env.port}`);
+// Start server
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
 });
-
-
-

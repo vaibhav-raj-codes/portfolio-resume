@@ -1,0 +1,101 @@
+<% layout('layout') %>
+
+<div class="container mt-5">
+  <div class="d-flex align-items-center mb-4">
+    <h2 class="text-center mb-0 flex-grow-1">Generate Portfolio</h2>
+    <button type="button" class="btn btn-outline-secondary me-3" onclick="window.history.back()" title="Go Back">
+      &lt;
+    </button>
+  </div>
+
+  <form action="/portfolio/view/<%= userId %>" method="POST">
+    <!-- Full Name -->
+    <div class="mb-3">
+      <label for="fullName" class="form-label">Full Name</label>
+      <input type="text" class="form-control" id="fullName" name="fullName" value="<%= portfolio.fullName || '' %>" required>
+    </div>
+
+    <!-- Bio -->
+    <div class="mb-3">
+      <label for="bio" class="form-label">Bio</label>
+      <textarea class="form-control" id="bio" name="bio" rows="3" required><%= portfolio.bio || '' %></textarea>
+    </div>
+
+    <!-- Image URL -->
+    <div class="mb-3">
+      <label for="imageUrl" class="form-label">Image URL</label>
+      <input type="text" class="form-control" id="imageUrl" name="imageUrl" value="<%= portfolio.imageUrl || '' %>" required>
+    </div>
+
+    <!-- Skills -->
+    <div class="mb-3">
+      <label for="skills" class="form-label">Skills (comma separated)</label>
+      <input type="text" class="form-control" id="skills" name="skills"
+        value="<%= Array.isArray(portfolio.skills) ? portfolio.skills.join(', ') : (portfolio.skills || '') %>" required>
+    </div>
+
+    <!-- Education -->
+    <div class="mb-3">
+      <label class="form-label">Education</label>
+      <div id="education-wrapper">
+        <% (portfolio.education || [{}]).forEach((edu, index) => { %>
+          <div class="mb-2 education-entry">
+            <input type="text" name="education[<%= index %>][degree]" placeholder="Degree" value="<%= edu.degree || '' %>" required>
+            <input type="text" name="education[<%= index %>][institution]" placeholder="Institution" value="<%= edu.institution || '' %>" required>
+            <input type="number" name="education[<%= index %>][year]" placeholder="Year" value="<%= edu.year || '' %>" required>
+            <button type="button" class="btn btn-danger btn-sm delete-education">Delete</button>
+          </div>
+        <% }) %>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="add-education">Add Education</button>
+    </div>
+
+    <!-- Experience -->
+    <div class="mb-3">
+      <label class="form-label">Experience</label>
+      <div id="experience-wrapper">
+        <% (portfolio.experience || [{}]).forEach((exp, index) => { %>
+          <div class="mb-2 experience-entry">
+            <input type="text" name="experience[<%= index %>][role]" placeholder="Role" value="<%= exp.role || '' %>">
+            <input type="text" name="experience[<%= index %>][company]" placeholder="Company" value="<%= exp.company || '' %>">
+            <input type="text" name="experience[<%= index %>][duration]" placeholder="Duration" value="<%= exp.duration || '' %>">
+            <input type="text" name="experience[<%= index %>][description]" placeholder="Description" value="<%= exp.description || '' %>">
+            <button type="button" class="btn btn-danger btn-sm delete-experience">Delete</button>
+          </div>
+        <% }) %>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="add-experience">Add Experience</button>
+    </div>
+
+    <!-- Projects -->
+    <div class="mb-3">
+      <label class="form-label">Projects</label>
+      <div id="projects-wrapper">
+        <% (portfolio.projects || [{}]).forEach((proj, index) => { %>
+          <div class="mb-2 project-entry">
+            <input type="text" name="projects[<%= index %>][title]" placeholder="Title" value="<%= proj.title || '' %>">
+            <input type="text" name="projects[<%= index %>][description]" placeholder="Description" value="<%= proj.description || '' %>">
+            <input type="text" name="projects[<%= index %>][link]" placeholder="Link" value="<%= proj.link || '' %>">
+            <button type="button" class="btn btn-danger btn-sm delete-project">Delete</button>
+          </div>
+        <% }) %>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="add-project">Add Project</button>
+    </div>
+
+    <!-- Social Links -->
+    <div class="mb-3">
+      <label class="form-label">Social Links</label>
+      <input type="text" name="socialLinks[linkedin]" placeholder="LinkedIn" value="<%= portfolio.socialLinks?.linkedin || '' %>" required>
+      <input type="text" name="socialLinks[github]" placeholder="GitHub" value="<%= portfolio.socialLinks?.github || '' %>" required>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <button type="submit" class="btn btn-primary w-100">Save Portfolio</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Same dynamic JS code from your earlier form (education, experience, projects)
+</script>

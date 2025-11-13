@@ -1,0 +1,171 @@
+<% layout('layout') %>
+
+<div class="container mt-5">
+  <div class="d-flex align-items-center mb-4">
+    
+    <h2 class="text-center mb-0 flex-grow-1">Generate Portfolio</h2>
+    <button type="button" class="btn btn-outline-secondary me-3" onclick="window.history.back()" title="Go Back">
+      &lt;
+    </button>
+  </div>
+
+  <form action="/portfolio/view/:userId" method="POST">
+    <div class="mb-3">
+      <label for="bio" class="form-label">Bio</label>
+      <textarea class="form-control" id="bio" name="bio" rows="3" required><%= portfolio.bio || '' %></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="imageUrl" class="form-label">Image URL</label>
+      <input type="text" class="form-control" id="imageUrl" name="imageUrl" value="<%= portfolio.imageUrl || '' %>">
+    </div>
+
+    <div class="mb-3">
+      <label for="skills" class="form-label">Skills (comma separated)</label>
+      <input type="text" class="form-control" id="skills" name="skills"
+        value="<%= Array.isArray(portfolio.skills) ? portfolio.skills.join(', ') : (portfolio.skills || '') %>">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Education</label>
+      <div id="education-wrapper">
+        <% (portfolio.education || [{}]).forEach((edu, index) => { %>
+          <div class="mb-2 education-entry">
+            <input type="text" name="education[<%= index %>][degree]" placeholder="Degree" value="<%= edu.degree || '' %>">
+            <input type="text" name="education[<%= index %>][institution]" placeholder="Institution" value="<%= edu.institution || '' %>">
+            <input type="number" name="education[<%= index %>][year]" placeholder="Year" value="<%= edu.year || '' %>">
+            <button type="button" class="btn btn-danger btn-sm delete-education">Delete</button>
+          </div>
+        <% }) %>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="add-education">Add Education</button>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Experience</label>
+      <div id="experience-wrapper">
+        <% (portfolio.experience || [{}]).forEach((exp, index) => { %>
+          <div class="mb-2 experience-entry">
+            <input type="text" name="experience[<%= index %>][role]" placeholder="Role" value="<%= exp.role || '' %>">
+            <input type="text" name="experience[<%= index %>][company]" placeholder="Company" value="<%= exp.company || '' %>">
+            <input type="text" name="experience[<%= index %>][duration]" placeholder="Duration" value="<%= exp.duration || '' %>">
+            <input type="text" name="experience[<%= index %>][description]" placeholder="Description" value="<%= exp.description || '' %>">
+            <button type="button" class="btn btn-danger btn-sm delete-experience">Delete</button>
+          </div>
+        <% }) %>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="add-experience">Add Experience</button>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Projects</label>
+      <div id="projects-wrapper">
+        <% (portfolio.projects || [{}]).forEach((proj, index) => { %>
+          <div class="mb-2 project-entry">
+            <input type="text" name="projects[<%= index %>][title]" placeholder="Title" value="<%= proj.title || '' %>">
+            <input type="text" name="projects[<%= index %>][description]" placeholder="Description" value="<%= proj.description || '' %>">
+            <input type="text" name="projects[<%= index %>][link]" placeholder="Link" value="<%= proj.link || '' %>">
+            <button type="button" class="btn btn-danger btn-sm delete-project">Delete</button>
+          </div>
+        <% }) %>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="add-project">Add Project</button>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Social Links</label>
+      <input type="text" name="socialLinks[linkedin]" placeholder="LinkedIn" value="<%= portfolio.socialLinks?.linkedin || '' %>">
+      <input type="text" name="socialLinks[github]" placeholder="GitHub" value="<%= portfolio.socialLinks?.github || '' %>">
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <button type="submit" class="btn btn-primary w-100">Save Portfolio</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Function to reindex entries after deletion
+  function reindexEntries(wrapperId, entryClass, namePrefix) {
+    const wrapper = document.getElementById(wrapperId);
+    const entries = wrapper.getElementsByClassName(entryClass);
+    Array.from(entries).forEach((entry, index) => {
+      const inputs = entry.getElementsByTagName('input');
+      Array.from(inputs).forEach(input => {
+        const oldName = input.name;
+        const field = oldName.match(/\[(.*?)\]$/)[1];
+        input.name = `${namePrefix}[${index}][${field}]`;
+      });
+    });
+  }
+
+  // Add Education dynamically
+  document.getElementById('add-education').addEventListener('click', () => {
+    const wrapper = document.getElementById('education-wrapper');
+    const index = wrapper.children.length;
+    const div = document.createElement('div');
+    div.classList.add('mb-2', 'education-entry');
+    div.innerHTML = `
+      <input type="text" name="education[${index}][degree]" placeholder="Degree">
+      <input type="text" name="education[${index}][institution]" placeholder="Institution">
+      <input type="number" name="education[${index}][year]" placeholder="Year">
+      <button type="button" class="btn btn-danger btn-sm delete-education">Delete</button>
+    `;
+    wrapper.appendChild(div);
+  });
+
+  // Delete Education
+  document.getElementById('education-wrapper').addEventListener('click', (e) => {
+    if (e.target.classList.contains('delete-education')) {
+      e.target.parentElement.remove();
+      reindexEntries('education-wrapper', 'education-entry', 'education');
+    }
+  });
+
+  // Add Experience dynamically
+  document.getElementById('add-experience').addEventListener('click', () => {
+    const wrapper = document.getElementById('experience-wrapper');
+    const index = wrapper.children.length;
+    const div = document.createElement('div');
+    div.classList.add('mb-2', 'experience-entry');
+    div.innerHTML = `
+      <input type="text" name="experience[${index}][role]" placeholder="Role">
+      <input type="text" name="experience[${index}][company]" placeholder="Company">
+      <input type="text" name="experience[${index}][duration]" placeholder="Duration">
+      <input type="text" name="experience[${index}][description]" placeholder="Description">
+      <button type="button" class="btn btn-danger btn-sm delete-experience">Delete</button>
+    `;
+    wrapper.appendChild(div);
+  });
+
+  // Delete Experience
+  document.getElementById('experience-wrapper').addEventListener('click', (e) => {
+    if (e.target.classList.contains('delete-experience')) {
+      e.target.parentElement.remove();
+      reindexEntries('experience-wrapper', 'experience-entry', 'experience');
+    }
+  });
+
+  // Add Project dynamically
+  document.getElementById('add-project').addEventListener('click', () => {
+    const wrapper = document.getElementById('projects-wrapper');
+    const index = wrapper.children.length;
+    const div = document.createElement('div');
+    div.classList.add('mb-2', 'project-entry');
+    div.innerHTML = `
+      <input type="text" name="projects[${index}][title]" placeholder="Title">
+      <input type="text" name="projects[${index}][description]" placeholder="Description">
+      <input type="text" name="projects[${index}][link]" placeholder="Link">
+      <button type="button" class="btn btn-danger btn-sm delete-project">Delete</button>
+    `;
+    wrapper.appendChild(div);
+  });
+
+  // Delete Project
+  document.getElementById('projects-wrapper').addEventListener('click', (e) => {
+    if (e.target.classList.contains('delete-project')) {
+      e.target.parentElement.remove();
+      reindexEntries('projects-wrapper', 'project-entry', 'projects');
+    }
+  });
+</script>
